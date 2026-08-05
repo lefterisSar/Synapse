@@ -37,6 +37,30 @@ export interface Status {
   configured: boolean
 }
 
+export interface AdCreative {
+  id: string
+  name: string | null
+  title: string | null
+  body: string | null
+  thumbnail_url: string | null
+  object_type: string | null
+}
+
+export interface Ad {
+  id: string
+  name: string
+  status: string
+  adset_id: string | null
+  creative: AdCreative | null
+  preview_shareable_link: string | null
+}
+
+// Note: AdPreviewResult is our own response record (no snake_case naming), hence `adFormat`.
+export interface AdPreviewResult {
+  adFormat: string
+  body: string | null
+}
+
 // In dev, Vite proxies /api to the backend, so a relative base works same-origin.
 // In prod, point VITE_API_BASE_URL at the deployed backend.
 const BASE = import.meta.env.VITE_API_BASE_URL ?? ''
@@ -73,6 +97,9 @@ export const api = {
     get<Insight | null>(`/api/insights?datePreset=${datePreset}`),
   insightsByCampaign: (datePreset: string) =>
     get<Insight[]>(`/api/insights/by-campaign?datePreset=${datePreset}`),
+  adsForCampaign: (campaignId: string) => get<Ad[]>(`/api/campaigns/${campaignId}/ads`),
+  adPreview: (adId: string, adFormat: string) =>
+    get<AdPreviewResult>(`/api/ads/${adId}/preview?adFormat=${adFormat}`),
 }
 
 export interface DatePreset {
@@ -90,4 +117,19 @@ export const DATE_PRESETS: DatePreset[] = [
   { value: 'this_month', label: 'This month' },
   { value: 'last_month', label: 'Last month' },
   { value: 'maximum', label: 'Maximum' },
+]
+
+export interface AdFormat {
+  value: string
+  label: string
+}
+
+// Must stay a subset of the backend's allowed AD_FORMATS set.
+export const AD_FORMATS: AdFormat[] = [
+  { value: 'DESKTOP_FEED_STANDARD', label: 'Desktop Feed' },
+  { value: 'MOBILE_FEED_STANDARD', label: 'Mobile Feed' },
+  { value: 'INSTAGRAM_STANDARD', label: 'Instagram Feed' },
+  { value: 'INSTAGRAM_STORY', label: 'Instagram Story' },
+  { value: 'FACEBOOK_STORY_MOBILE', label: 'Facebook Story' },
+  { value: 'RIGHT_COLUMN_STANDARD', label: 'Right Column' },
 ]

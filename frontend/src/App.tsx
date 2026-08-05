@@ -1,35 +1,33 @@
-import { useMemo, useState } from 'react'
-import { api, DATE_PRESETS } from './api'
-import { Banner, EmptyState } from './components/ui'
-import { CampaignsTable } from './components/CampaignsTable'
+import { useState } from 'react'
+import { api } from './api'
+import { Banner } from './components/ui'
 import { Header } from './components/Header'
-import { KpiGrid } from './components/KpiGrid'
+import { Tabs, type TabKey } from './components/Tabs'
+import { OverviewTab } from './tabs/OverviewTab'
+import { PreviewsTab } from './tabs/PreviewsTab'
 import { useAsync } from './hooks'
 
 export default function App() {
+  const [tab, setTab] = useState<TabKey>(() =>
+    window.location.hash === '#previews' ? 'previews' : 'overview',
+  )
+  const changeTab = (t: TabKey) => {
+    setTab(t)
+    window.location.hash = t
+  }
   const [preset, setPreset] = useState('last_30d')
   const [reloadKey, setReloadKey] = useState(0)
   const reload = () => setReloadKey((k) => k + 1)
 
+  // Shared across tabs and needed by the header.
   const status = useAsync(() => api.status(), [reloadKey])
   const account = useAsync(() => api.account(), [reloadKey])
-  const campaigns = useAsync(() => api.campaigns(), [reloadKey])
-  const insight = useAsync(() => api.accountInsights(preset), [preset, reloadKey])
-  const byCampaign = useAsync(() => api.insightsByCampaign(preset), [preset, reloadKey])
 
   // The /status endpoint never calls Meta, so its only failure mode is the backend being down.
   const offline = !!status.error
   const configured = status.data?.configured === true
   const currency = account.data?.currency ?? 'USD'
-  const presetLabel = useMemo(
-    () => DATE_PRESETS.find((p) => p.value === preset)?.label ?? preset,
-    [preset],
-  )
-
-  const refreshing =
-    status.loading || account.loading || insight.loading || byCampaign.loading
-
-  const noDelivery = configured && !insight.loading && !insight.error && insight.data == null
+  const refreshing = status.loading || account.loading
 
   return (
     <div className="app">
@@ -44,7 +42,10 @@ export default function App() {
         onPresetChange={setPreset}
         onReload={reload}
         refreshing={refreshing}
+        showWindow={tab === 'overview'}
       />
+
+      <Tabs tab={tab} onChange={changeTab} />
 
       <main className="content">
         {offline && (
@@ -57,52 +58,17 @@ export default function App() {
         {!offline && status.data && !configured && (
           <Banner tone="info" title="Backend is up, but Meta credentials aren't configured">
             Set <code>META_ACCESS_TOKEN</code> and <code>META_AD_ACCOUNT_ID</code> in{' '}
-            <code>.env</code>, restart <code>bootRun</code>, and refresh.
+            <code>.env</code>, restart the backend, and refresh.
           </Banner>
         )}
 
-        {!offline && configured && (
-          <>
-            {(insight.error || byCampaign.error || campaigns.error) && (
-              <Banner title="Meta returned an error">
-                {insight.error ?? byCampaign.error ?? campaigns.error}
-              </Banner>
-            )}
-
-            <section className="block">
-              <div className="block__head">
-                <h2 className="block__title">Performance</h2>
-                <span className="block__sub">{presetLabel}</span>
-              </div>
-              {noDelivery && (
-                <p className="note">
-                  No delivery recorded for this window — figures read zero until an active
-                  campaign spends.
-                </p>
-              )}
-              <KpiGrid insight={insight.data} currency={currency} loading={insight.loading} />
-            </section>
-
-            <section className="block">
-              <div className="block__head">
-                <h2 className="block__title">Campaigns</h2>
-                <span className="block__sub">
-                  {campaigns.data ? `${campaigns.data.length} total` : ' '}
-                </span>
-              </div>
-              {campaigns.error ? (
-                <EmptyState glyph="⚠" title="Couldn't load campaigns" hint={campaigns.error} />
-              ) : (
-                <CampaignsTable
-                  campaigns={campaigns.data}
-                  byCampaign={byCampaign.data}
-                  currency={currency}
-                  loading={campaigns.loading}
-                />
-              )}
-            </section>
-          </>
-        )}
+        {!offline &&
+          configured &&
+          (tab === 'overview' ? (
+            <OverviewTab preset={preset} reloadKey={reloadKey} currency={currency} />
+          ) : (
+            <PreviewsTab reloadKey={reloadKey} />
+          ))}
       </main>
 
       <footer className="footer">

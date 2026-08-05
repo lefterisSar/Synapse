@@ -10,6 +10,7 @@ interface Props {
   onPresetChange: (value: string) => void
   onReload: () => void
   refreshing: boolean
+  showWindow: boolean
 }
 
 export function Header({
@@ -20,6 +21,7 @@ export function Header({
   onPresetChange,
   onReload,
   refreshing,
+  showWindow,
 }: Props) {
   const connected = !offline && status?.configured === true
 
@@ -54,20 +56,22 @@ export function Header({
           )}
         </div>
 
-        <label className="select">
-          <span className="select__label">Window</span>
-          <select
-            className="select__control"
-            value={preset}
-            onChange={(e) => onPresetChange(e.target.value)}
-          >
-            {DATE_PRESETS.map((p: DatePreset) => (
-              <option key={p.value} value={p.value}>
-                {p.label}
-              </option>
-            ))}
-          </select>
-        </label>
+        {showWindow && (
+          <label className="select">
+            <span className="select__label">Window</span>
+            <select
+              className="select__control"
+              value={preset}
+              onChange={(e) => onPresetChange(e.target.value)}
+            >
+              {DATE_PRESETS.map((p: DatePreset) => (
+                <option key={p.value} value={p.value}>
+                  {p.label}
+                </option>
+              ))}
+            </select>
+          </label>
+        )}
 
         <button className="icon-btn" onClick={onReload} disabled={refreshing} title="Refresh">
           <span className={refreshing ? 'spin' : ''}>↻</span>

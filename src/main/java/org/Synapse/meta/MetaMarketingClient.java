@@ -3,9 +3,15 @@ package org.Synapse.meta;
 import com.fasterxml.jackson.databind.JsonNode;
 import org.Synapse.config.MetaProperties;
 import org.Synapse.meta.dto.Account;
+import org.Synapse.meta.dto.Ad;
+import org.Synapse.meta.dto.AdPreview;
 import org.Synapse.meta.dto.Campaign;
 import org.Synapse.meta.dto.GraphListResponse;
 import org.Synapse.meta.dto.Insight;
+
+import java.net.URI;
+import java.util.List;
+import java.util.Map;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
@@ -27,9 +33,20 @@ public class MetaMarketingClient {
     private static final ParameterizedTypeReference<GraphListResponse<Insight>> INSIGHT_LIST =
             new ParameterizedTypeReference<>() {
             };
+    private static final ParameterizedTypeReference<GraphListResponse<Ad>> AD_LIST =
+            new ParameterizedTypeReference<>() {
+            };
+    private static final ParameterizedTypeReference<GraphListResponse<AdPreview>> PREVIEW_LIST =
+            new ParameterizedTypeReference<>() {
+            };
+    private static final String AD_FIELDS =
+            "id,name,status,adset_id,preview_shareable_link,"
+                    + "creative{id,name,title,body,thumbnail_url,object_type}";
 
     private final RestClient restClient;
     private final MetaProperties props;
+    // Plain client (no Graph base URL, no auth header) for fetching CDN images server-side.
+    private final RestClient plainClient = RestClient.create();
 
     public MetaMarketingClient(RestClient metaRestClient, MetaProperties props) {
         this.restClient = metaRestClient;
@@ -87,6 +104,65 @@ public class MetaMarketingClient {
                         .build(props.normalizedAdAccountId()))
                 .retrieve()
                 .body(INSIGHT_LIST));
+    }
+
+    /** Lists the ads under a campaign, expanding the creative (thumbnail, title, body). */
+    public GraphListResponse<Ad> getAdsForCampaign(String campaignId) {
+        requireConfigured();
+        // `fields` is passed as a URI *variable* (not inline) so its `creative{…}` braces aren't
+        // mistaken for URI template placeholders — they get percent-encoded as a literal value.
+        return execute(() -> restClient.get()
+                .uri(uri -> uri.path("/{campaignId}/ads")
+                        .queryParam("fields", "{fields}")
+                        .queryParam("limit", 100)
+                        .build(Map.of("campaignId", campaignId, "fields", AD_FIELDS)))
+                .retrieve()
+                .body(AD_LIST));
+    }
+
+    /**
+     * Renders an existing ad in the given format (e.g. {@code DESKTOP_FEED_STANDARD}) and returns
+     * the embeddable {@code <iframe>} HTML, or null if Meta produced no preview.
+     */
+    public String getAdPreview(String adId, String adFormat) {
+        requireConfigured();
+        GraphListResponse<AdPreview> response = execute(() -> restClient.get()
+                .uri(uri -> uri.path("/{adId}/previews")
+                        .queryParam("ad_format", adFormat)
+                        .build(adId))
+                .retrieve()
+                .body(PREVIEW_LIST));
+        List<AdPreview> rows = response == null ? null : response.data();
+        return rows == null || rows.isEmpty() ? null : rows.getFirst().body();
+    }
+
+    /** The (small) creative thumbnail URL for an ad, or null if the creative has none. */
+    public String getAdThumbnailUrl(String adId) {
+        requireConfigured();
+        Ad ad = execute(() -> restClient.get()
+                .uri(uri -> uri.path("/{adId}")
+                        .queryParam("fields", "{fields}")
+                        .build(Map.of("adId", adId, "fields", "creative{thumbnail_url}")))
+                .retrieve()
+                .body(Ad.class));
+        return ad != null && ad.creative() != null ? ad.creative().thumbnailUrl() : null;
+    }
+
+    /**
+     * Downloads an image from Meta's CDN server-side so the browser can load it same-origin
+     * (dodging ad blockers / tracking protection that block fbcdn). Host-checked to avoid SSRF.
+     */
+    public byte[] fetchImage(String absoluteUrl) {
+        URI uri = URI.create(absoluteUrl);
+        String host = uri.getHost();
+        if (host == null || !(host.endsWith("fbcdn.net") || host.endsWith("facebook.com"))) {
+            throw new MetaApiException("Refusing to fetch image from untrusted host: " + host);
+        }
+        try {
+            return plainClient.get().uri(uri).retrieve().body(byte[].class);
+        } catch (RestClientException e) {
+            throw new MetaApiException("Failed to fetch thumbnail image: " + e.getMessage(), e);
+        }
     }
 
     private void requireConfigured() {

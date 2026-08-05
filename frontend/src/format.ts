@@ -44,6 +44,11 @@ export function statusTone(status: string): 'live' | 'paused' | 'muted' {
   return STATUS_TONE[status] ?? 'muted'
 }
 
+export function statusLabel(status: string): string {
+  const tone = statusTone(status)
+  return tone === 'live' ? 'Active' : tone === 'paused' ? 'Paused' : 'Archived'
+}
+
 // "OUTCOME_SALES" -> "Sales", "LINK_CLICKS" -> "Link Clicks"
 export function humanizeObjective(objective: string | null): string {
   if (!objective) return '—'

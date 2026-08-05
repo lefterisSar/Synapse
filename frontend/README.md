@@ -29,6 +29,14 @@ Open **http://localhost:5173**. If the header shows **Backend offline**, the bac
 - **Campaigns** — one row per campaign with status, objective, daily budget, impressions, and a
   spend bar (`/api/campaigns` joined with `/api/insights/by-campaign`).
 
+There are two tabs (deep-linkable via `#overview` / `#previews`):
+
+- **Overview** — the performance + campaigns view above.
+- **Ad Previews** — each campaign expands to a grid of its ads (thumbnail, status, creative text).
+  Each ad has a **Live preview** button that embeds Meta's rendered `<iframe>` for a chosen format
+  (Desktop/Mobile/Instagram/Story/Right Column), plus **Open ↗** for the tokenless shareable link.
+  Note: the live-preview iframe carries the access token — fine locally; proxy it for a public deploy.
+
 Your Playground account has no campaigns/spend yet, so KPIs read `—` and the campaign table shows
 an empty state. Point the backend at an account with active campaigns to see live numbers.
 

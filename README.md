@@ -35,9 +35,13 @@ curl "localhost:8080/api/insights/by-campaign?datePreset=last_7d"
 | Method & path                       | Returns                                             |
 |-------------------------------------|-----------------------------------------------------|
 | `GET /api/status`                   | `{ "configured": bool }` — credential check         |
+| `GET /api/account`                  | Account name, currency, timezone                    |
 | `GET /api/campaigns`                | Campaigns with status, objective, budgets           |
 | `GET /api/insights?datePreset=`     | Account-level metrics (impressions, spend, ctr, …)  |
 | `GET /api/insights/by-campaign`     | Same metrics, one row per campaign                  |
+| `GET /api/campaigns/{id}/ads`       | Ads in a campaign (creative + shareable link)       |
+| `GET /api/ads/{id}/preview?adFormat=` | Embeddable `<iframe>` preview of an ad             |
+| `GET /api/ads/{id}/thumbnail`       | Creative thumbnail, proxied (dodges ad blockers)    |
 
 `datePreset` accepts Graph API presets: `today`, `yesterday`, `last_7d`, `last_30d`, `this_month`, etc.
 

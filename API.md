@@ -117,6 +117,44 @@ curl -s "http://localhost:8080/api/insights/by-campaign?datePreset=last_30d"
 
 ---
 
+## 5. Ads & previews (powers the **Ad Previews** tab)
+
+**Ads in a campaign** — `GET /api/campaigns/{campaignId}/ads`
+
+```bash
+curl -s http://localhost:8080/api/campaigns/120251232788860391/ads
+```
+```json
+[
+  {
+    "id": "120251232788870391",
+    "name": "Ad_1",
+    "status": "PAUSED",
+    "adset_id": "120251232788880391",
+    "creative": { "id": "916…", "thumbnail_url": "https://…jpg", "title": null, "body": null,
+                  "object_type": "SHARE" },
+    "preview_shareable_link": "https://fb.me/…"
+  }
+]
+```
+
+**Embeddable preview for one ad** — `GET /api/ads/{adId}/preview?adFormat=…`
+
+```bash
+curl -s "http://localhost:8080/api/ads/120251232788870391/preview?adFormat=DESKTOP_FEED_STANDARD"
+```
+```json
+{ "adFormat": "DESKTOP_FEED_STANDARD", "body": "<iframe src=\"https://…preview_iframe.php…\"></iframe>" }
+```
+
+`adFormat` ∈ `DESKTOP_FEED_STANDARD`, `MOBILE_FEED_STANDARD`, `INSTAGRAM_STANDARD`,
+`INSTAGRAM_STORY`, `FACEBOOK_STORY_MOBILE`, `RIGHT_COLUMN_STANDARD`. Ids must be numeric
+(otherwise **HTTP 400**). **Security note:** the preview iframe src carries the access token — fine
+for a local read-only dashboard; a public deploy should proxy previews server-side so the token
+never reaches the browser.
+
+---
+
 ## `datePreset` values you can use
 
 `today`, `yesterday`, `last_3d`, `last_7d`, `last_14d`, `last_28d`, `last_30d`, `last_90d`,
