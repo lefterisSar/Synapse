@@ -1,5 +1,11 @@
 .gradle
 build/
+
+### Secrets — never commit these ###
+.env
+application-local.yml
+src/main/resources/application-local.yml
+
 !gradle/wrapper/gradle-wrapper.jar
 !**/src/main/**/build/
 !**/src/test/**/build/

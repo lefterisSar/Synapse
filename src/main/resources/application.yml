@@ -1,0 +1,19 @@
+spring:
+  application:
+    name: synapse
+
+server:
+  port: 8080
+
+meta:
+  # Graph API version. Set this to the current version shown in your App Dashboard
+  # (Meta ships a new one roughly quarterly; each is supported ~2 years).
+  api-version: v23.0
+  # System User access token with the `ads_read` scope. Provided via env var — never commit it.
+  access-token: ${META_ACCESS_TOKEN:}
+  # Ad account id. Accepts either `1234567890` or `act_1234567890`.
+  ad-account-id: ${META_AD_ACCOUNT_ID:}
+
+# Where the separate frontend runs, for CORS. Comma-separated. Override via env in prod.
+cors:
+  allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:5173,http://localhost:3000}
