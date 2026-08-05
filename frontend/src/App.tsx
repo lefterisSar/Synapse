@@ -49,9 +49,8 @@ export default function App() {
       <main className="content">
         {offline && (
           <Banner title="Can't reach the backend">
-            Start it with <code>./gradlew bootRun</code> (after{' '}
-            <code>set -a; source .env; set +a</code>), then hit refresh. The dev server proxies{' '}
-            <code>/api</code> to <code>http://localhost:8080</code>.
+            Start it with <code>./gradlew bootRun</code> (or the Run button in IntelliJ), then hit
+            refresh. The dev server proxies <code>/api</code> to <code>http://localhost:8080</code>.
           </Banner>
         )}
 

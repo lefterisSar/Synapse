@@ -19,6 +19,9 @@ repositories {
 
 dependencies {
     implementation("org.springframework.boot:spring-boot-starter-web")
+    // Loads a local `.env` into the Spring Environment on startup, regardless of how the app is
+    // launched (IntelliJ Run button, ./gradlew bootRun, java -jar). Safe if `.env` is absent.
+    implementation("me.paulschwarz:spring-dotenv:4.0.0")
     annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
 
     testImplementation("org.springframework.boot:spring-boot-starter-test")
