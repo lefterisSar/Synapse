@@ -17,9 +17,8 @@ A read-only dashboard over the **Meta Marketing (Ads) API**. This repo is the **
 ## 2. Configure & run the backend
 
 ```bash
-cp .env.example .env          # then paste your token + ad account id
-export $(grep -v '^#' .env | xargs)   # load env vars into the shell
-./gradlew bootRun
+cp .env.example .env          # then paste your token + ad account id (no spaces around '=')
+./gradlew bootRun             # reads .env automatically (spring-dotenv) — works from IntelliJ too
 ```
 
 Verify:

@@ -9,9 +9,8 @@ CORS setup and no base URL to configure.
 Two terminals:
 
 ```bash
-# 1) backend (repo root)
+# 1) backend (repo root) — reads .env automatically
 cd ..
-set -a; source .env; set +a
 ./gradlew bootRun
 
 # 2) frontend (this folder)

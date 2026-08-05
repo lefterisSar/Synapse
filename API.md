@@ -6,8 +6,7 @@ Copy-paste curls to exercise the backend. All endpoints are **read-only** and re
 
 ```bash
 cd ~/IdeaProjects/Synapse
-set -a; source .env; set +a     # load META_ACCESS_TOKEN + META_AD_ACCOUNT_ID (no spaces after '='!)
-./gradlew bootRun               # leave running; open a second terminal for the curls below
+./gradlew bootRun               # reads .env automatically; leave running, use a 2nd terminal for curls
 ```
 
 Base URL: **`http://localhost:8080`**
