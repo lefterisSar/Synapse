@@ -1,6 +1,7 @@
 package org.Synapse.meta;
 
 import org.Synapse.config.MetaProperties;
+import org.Synapse.meta.dto.Account;
 import org.Synapse.meta.dto.Campaign;
 import org.Synapse.meta.dto.Insight;
 import org.springframework.stereotype.Service;
@@ -24,6 +25,10 @@ public class MarketingService {
 
     public boolean isConfigured() {
         return props.isConfigured();
+    }
+
+    public Account account() {
+        return client.getAccount();
     }
 
     public List<Campaign> campaigns() {

@@ -2,6 +2,7 @@ package org.Synapse.meta;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import org.Synapse.config.MetaProperties;
+import org.Synapse.meta.dto.Account;
 import org.Synapse.meta.dto.Campaign;
 import org.Synapse.meta.dto.GraphListResponse;
 import org.Synapse.meta.dto.Insight;
@@ -33,6 +34,17 @@ public class MetaMarketingClient {
     public MetaMarketingClient(RestClient metaRestClient, MetaProperties props) {
         this.restClient = metaRestClient;
         this.props = props;
+    }
+
+    /** Fetches account metadata (name, currency, status) used for headers and money formatting. */
+    public Account getAccount() {
+        requireConfigured();
+        return execute(() -> restClient.get()
+                .uri(uri -> uri.path("/{account}")
+                        .queryParam("fields", "name,currency,account_status,amount_spent,timezone_name")
+                        .build(props.normalizedAdAccountId()))
+                .retrieve()
+                .body(Account.class));
     }
 
     /** Lists campaigns in the ad account with their status, objective, and budgets. */

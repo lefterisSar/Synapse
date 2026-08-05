@@ -1,6 +1,7 @@
 package org.Synapse.web;
 
 import org.Synapse.meta.MarketingService;
+import org.Synapse.meta.dto.Account;
 import org.Synapse.meta.dto.Campaign;
 import org.Synapse.meta.dto.Insight;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -26,6 +27,11 @@ public class DashboardController {
     @GetMapping("/status")
     public Map<String, Object> status() {
         return Map.of("configured", marketing.isConfigured());
+    }
+
+    @GetMapping("/account")
+    public Account account() {
+        return marketing.account();
     }
 
     @GetMapping("/campaigns")
