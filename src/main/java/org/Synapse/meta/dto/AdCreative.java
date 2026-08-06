@@ -13,6 +13,7 @@ public record AdCreative(
         String title,
         String body,
         String thumbnailUrl,
-        String objectType
+        String objectType,
+        String effectiveObjectStoryId
 ) {
 }

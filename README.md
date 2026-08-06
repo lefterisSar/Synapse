@@ -40,7 +40,7 @@ curl "localhost:8080/api/insights/by-campaign?datePreset=last_7d"
 | `GET /api/insights?datePreset=`     | Account-level metrics (impressions, spend, ctr, …)  |
 | `GET /api/insights/by-campaign`     | Same metrics, one row per campaign                  |
 | `GET /api/campaigns/{id}/ads`       | Ads in a campaign (creative + shareable link)       |
-| `GET /api/ads/{id}/preview?adFormat=` | Embeddable `<iframe>` preview of an ad             |
+| `GET /api/ads/{id}/preview?adFormat=` | Embeddable `<iframe>` preview HTML of an ad        |
 | `GET /api/ads/{id}/thumbnail`       | Creative thumbnail, proxied (dodges ad blockers)    |
 
 `datePreset` accepts Graph API presets: `today`, `yesterday`, `last_7d`, `last_30d`, `this_month`, etc.
@@ -50,3 +50,6 @@ curl "localhost:8080/api/insights/by-campaign?datePreset=last_7d"
 - Never commit `.env` or tokens (already gitignored).
 - Update the Graph API version in `application.yml` (`meta.api-version`) when Meta ships a new one.
 - CORS allows `http://localhost:5173` / `:3000` by default — override with `CORS_ALLOWED_ORIGINS`.
+- **Ad previews** embed Meta's preview `<iframe>` (opt-in "Live preview" button), scaled to a fixed
+  card size. In a browser with no Facebook session they show Meta's cookie-consent wall — gone when
+  you're logged in. "Open ↗" opens the ad's shareable link top-level (first-party, no wall).

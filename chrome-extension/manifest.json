@@ -1,0 +1,14 @@
+{
+  "manifest_version": 3,
+  "name": "Synapse — Ad Preview Consent Dismisser",
+  "version": "1.0.0",
+  "description": "Auto-dismisses Facebook's cookie-consent dialog inside embedded ad previews so they render cleanly. Runs only inside facebook.com iframes.",
+  "content_scripts": [
+    {
+      "matches": ["*://*.facebook.com/*", "*://facebook.com/*"],
+      "all_frames": true,
+      "run_at": "document_idle",
+      "js": ["dismiss-consent.js"]
+    }
+  ]
+}

@@ -721,9 +721,11 @@ code {
 
 .ad-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
-  gap: 14px;
+  /* Bigger cards so previews render large; cap the max so mobile creatives aren't upscaled too far. */
+  grid-template-columns: repeat(auto-fill, minmax(380px, 460px));
+  gap: 16px;
   padding: 4px 18px 20px;
+  align-items: start;
 }
 
 .adcard {
@@ -736,32 +738,17 @@ code {
 }
 
 .adcard__media {
-  min-height: 220px;
+  height: 200px;
   background: var(--bg-2);
   display: flex;
   align-items: center;
   justify-content: center;
-  overflow: auto;
-  padding: 12px;
+  overflow: hidden;
 }
 
-.adcard__frame {
-  display: flex;
-  justify-content: center;
+.adcard__img {
   width: 100%;
-}
-
-.adcard__frame iframe {
-  border: 0;
-  max-width: 100%;
-  border-radius: 6px;
-  background: #fff;
-}
-
-.adcard__thumb {
-  width: 72px;
-  height: 72px;
-  border-radius: 10px;
+  height: 100%;
   object-fit: cover;
 }
 
@@ -770,11 +757,51 @@ code {
   color: var(--ink-faint);
 }
 
-.adcard__loading {
+.adcard__live {
+  margin-top: 8px;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: 10px;
+  gap: 8px;
+}
+
+/* Fixed-size preview box: the ad iframe is scaled (in ScaledPreview) to fit fully inside it,
+   centered, with no scrolling — consistent footprint across all ad formats. */
+.adcard__scaler {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--bg-2);
+}
+
+.adcard__scaled-iframe {
+  position: absolute;
+  top: 0;
+  left: 0;
+  transform-origin: top left;
+  border: 0;
+  background: #fff;
+}
+
+/* Fallback embed if Meta's markup ever fails to parse. */
+.adcard__frame {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  max-height: 470px;
+  overflow: auto;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--bg-2);
+  padding: 8px;
+}
+
+.adcard__frame iframe {
+  border: 0;
+  max-width: 100%;
+  border-radius: 6px;
+  background: #fff;
 }
 
 .adcard__loadingtxt {
@@ -839,21 +866,6 @@ code {
 .adcard__err {
   font-size: 12px;
   color: var(--red);
-}
-
-.adcard__preview {
-  margin-top: 6px;
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  overflow: auto;
-  max-height: 640px;
-  background: var(--bg-2);
-}
-
-.adcard__preview iframe {
-  display: block;
-  border: 0;
-  max-width: 100%;
 }
 
 /* --- buttons ------------------------------------------------------------- */

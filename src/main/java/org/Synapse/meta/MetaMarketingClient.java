@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import org.Synapse.config.MetaProperties;
 import org.Synapse.meta.dto.Account;
 import org.Synapse.meta.dto.Ad;
+import org.Synapse.meta.dto.AdCreative;
 import org.Synapse.meta.dto.AdPreview;
 import org.Synapse.meta.dto.Campaign;
 import org.Synapse.meta.dto.GraphListResponse;
@@ -136,16 +137,44 @@ public class MetaMarketingClient {
         return rows == null || rows.isEmpty() ? null : rows.getFirst().body();
     }
 
-    /** The (small) creative thumbnail URL for an ad, or null if the creative has none. */
-    public String getAdThumbnailUrl(String adId) {
+    /**
+     * Best available image URL for an ad: the backing post's full-resolution {@code full_picture}
+     * when the token has Page access, else the small creative {@code thumbnail_url}. Null if neither.
+     */
+    public String getAdImageUrl(String adId) {
         requireConfigured();
         Ad ad = execute(() -> restClient.get()
                 .uri(uri -> uri.path("/{adId}")
                         .queryParam("fields", "{fields}")
-                        .build(Map.of("adId", adId, "fields", "creative{thumbnail_url}")))
+                        .build(Map.of("adId", adId,
+                                "fields", "creative{thumbnail_url,effective_object_story_id}")))
                 .retrieve()
                 .body(Ad.class));
-        return ad != null && ad.creative() != null ? ad.creative().thumbnailUrl() : null;
+        AdCreative creative = ad != null ? ad.creative() : null;
+        if (creative == null) {
+            return null;
+        }
+        String storyId = creative.effectiveObjectStoryId();
+        if (storyId != null && !storyId.isBlank()) {
+            String fullPicture = tryFetchFullPicture(storyId);
+            if (fullPicture != null && !fullPicture.isBlank()) {
+                return fullPicture;
+            }
+        }
+        return creative.thumbnailUrl();
+    }
+
+    /** The post's full-resolution image, or null if the token lacks Page access (no `pages_read_engagement`). */
+    private String tryFetchFullPicture(String storyId) {
+        try {
+            JsonNode node = restClient.get()
+                    .uri(uri -> uri.path("/{storyId}").queryParam("fields", "full_picture").build(storyId))
+                    .retrieve()
+                    .body(JsonNode.class);
+            return node != null && node.hasNonNull("full_picture") ? node.get("full_picture").asText() : null;
+        } catch (RestClientException e) {
+            return null;
+        }
     }
 
     /**

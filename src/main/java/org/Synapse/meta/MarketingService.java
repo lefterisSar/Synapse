@@ -77,10 +77,10 @@ public class MarketingService {
         return new AdPreviewResult(adFormat, client.getAdPreview(adId, adFormat));
     }
 
-    /** Proxied creative thumbnail bytes, or null if the ad has no thumbnail. */
+    /** Proxied ad image bytes (full_picture when available, else thumbnail), or null if none. */
     public byte[] adThumbnail(String adId) {
         requireNumericId(adId, "adId");
-        String url = client.getAdThumbnailUrl(adId);
+        String url = client.getAdImageUrl(adId);
         if (url == null || url.isBlank()) {
             return null;
         }
